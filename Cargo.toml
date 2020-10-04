@@ -1,0 +1,2 @@
+[workspace]
+members = ["cosmo_store", "cosmo_store_util"]
