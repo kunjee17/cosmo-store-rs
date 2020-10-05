@@ -1,5 +1,3 @@
-use std::fmt::{Debug, Display};
-
 pub struct Aggregate<State, Command, Event> {
     pub init: State,
     pub apply: fn(state: &State, event: &Event) -> State,
@@ -8,7 +6,6 @@ pub struct Aggregate<State, Command, Event> {
 
 #[cfg(test)]
 mod tests {
-    use chrono::NaiveDateTime;
     use uuid::Uuid;
     use crate::Aggregate;
 
@@ -99,7 +96,7 @@ mod tests {
                 }
             }
         },
-        execute: |state , command| {
+        execute: |_state , command| {
             match command {
                 TodoCommand::AddTodo(t) => {
                     vec![TodoEvent::TodoAdded(t.clone())]
