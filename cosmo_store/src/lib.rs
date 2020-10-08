@@ -1,7 +1,6 @@
+use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use uuid::Uuid;
-use async_trait::async_trait;
-
 
 #[derive(Clone, Debug)]
 pub enum ExpectedVersion<Version> {
@@ -85,24 +84,26 @@ impl<Payload: Copy + Clone, Meta: Copy + Clone, Version> EventRead<Payload, Meta
 pub trait EventStore<Payload, Meta, Version> {
     async fn append_event(
         stream_id: &str,
-        version: ExpectedVersion<Version>,
-        payload: EventWrite<Payload, Meta>,
+        version: &ExpectedVersion<Version>,
+        payload: &EventWrite<Payload, Meta>,
     ) -> EventRead<Payload, Meta, Version>;
     async fn append_events(
         stream_id: &str,
-        version: ExpectedVersion<Version>,
-        payload: Vec<EventWrite<Payload,Meta>>,
-    ) -> Vec<EventRead<Payload,Meta,Version>>;
-    async fn get_event(stream_id: &str, version: Version) -> EventRead<Payload,Meta,Version>;
-    async fn get_events(stream_id: &str, version: EventsReadRange<Version>) -> Vec<EventRead<Payload,Meta,Version>>;
-    async fn get_events_by_correlation_id(correlation_id: Uuid) -> Vec<EventRead<Payload,Meta,Version>>;
-    async fn get_streams(
-        filter: StreamsReadFilter,
-    ) -> Vec<EventStream<Version>>;
+        version: &ExpectedVersion<Version>,
+        payload: Vec<EventWrite<Payload, Meta>>,
+    ) -> Vec<EventRead<Payload, Meta, Version>>;
+    async fn get_event(stream_id: &str, version: Version) -> EventRead<Payload, Meta, Version>;
+    async fn get_events(
+        stream_id: &str,
+        version: &EventsReadRange<Version>,
+    ) -> Vec<EventRead<Payload, Meta, Version>>;
+    async fn get_events_by_correlation_id(
+        correlation_id: &Uuid,
+    ) -> Vec<EventRead<Payload, Meta, Version>>;
+    async fn get_streams(filter: &StreamsReadFilter) -> Vec<EventStream<Version>>;
     async fn get_stream(stream_id: &str) -> EventStream<Version>;
-    fn event_appended(&self) -> EventRead<Payload,Meta,Version>; //TODO Observable will come here
+    fn event_appended(&self) -> EventRead<Payload, Meta, Version>; //TODO Observable will come here
 }
-
 
 #[cfg(test)]
 mod tests {
