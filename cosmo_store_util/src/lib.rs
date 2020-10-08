@@ -1,7 +1,7 @@
 pub trait Aggregate<State, Command, Event> {
     fn init(&self) -> State;
-    fn apply(&self,state: &State, event: &Event) -> State;
-    fn execute(&self,state: &State, command: &Command) -> Vec<Event>;
+    fn apply(&self, state: &State, event: &Event) -> State;
+    fn execute(&self, state: &State, command: &Command) -> Vec<Event>;
 }
 
 #[cfg(test)]
@@ -56,15 +56,13 @@ mod tests {
 
     impl TodoState {
         pub const fn init() -> TodoState {
-            TodoState {
-                todos : vec![]
-            }
+            TodoState { todos: vec![] }
         }
     }
 
     #[derive(Clone, Debug)]
     struct TodoAggregate {
-        initial_state : TodoState
+        initial_state: TodoState,
     }
 
     impl Aggregate<TodoState, TodoCommand, TodoEvent> for TodoAggregate {
@@ -131,10 +129,9 @@ mod tests {
         }
     }
 
-    const TODO_AGGREGATE : TodoAggregate = TodoAggregate {
-        initial_state: TodoState::init()
+    const TODO_AGGREGATE: TodoAggregate = TodoAggregate {
+        initial_state: TodoState::init(),
     };
-
 
     #[test]
     fn it_works() {
@@ -163,7 +160,7 @@ mod tests {
         assert_eq!(events.len(), 1);
         let state = events
             .iter()
-            .fold(TODO_AGGREGATE.init(), |a, b| TODO_AGGREGATE.apply (&a, &b));
+            .fold(TODO_AGGREGATE.init(), |a, b| TODO_AGGREGATE.apply(&a, &b));
 
         assert_eq!(state.todos.len(), 1);
     }

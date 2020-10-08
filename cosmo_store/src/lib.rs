@@ -83,25 +83,33 @@ impl<Payload: Copy + Clone, Meta: Copy + Clone, Version> EventRead<Payload, Meta
 #[async_trait]
 pub trait EventStore<Payload, Meta, Version> {
     async fn append_event(
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: &EventWrite<Payload, Meta>,
     ) -> EventRead<Payload, Meta, Version>;
     async fn append_events(
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: Vec<EventWrite<Payload, Meta>>,
     ) -> Vec<EventRead<Payload, Meta, Version>>;
-    async fn get_event(stream_id: &str, version: Version) -> EventRead<Payload, Meta, Version>;
+    async fn get_event(
+        &self,
+        stream_id: &str,
+        version: &Version,
+    ) -> EventRead<Payload, Meta, Version>;
     async fn get_events(
+        &self,
         stream_id: &str,
         version: &EventsReadRange<Version>,
     ) -> Vec<EventRead<Payload, Meta, Version>>;
     async fn get_events_by_correlation_id(
+        &self,
         correlation_id: &Uuid,
     ) -> Vec<EventRead<Payload, Meta, Version>>;
-    async fn get_streams(filter: &StreamsReadFilter) -> Vec<EventStream<Version>>;
-    async fn get_stream(stream_id: &str) -> EventStream<Version>;
+    async fn get_streams(&self, filter: &StreamsReadFilter) -> Vec<EventStream<Version>>;
+    async fn get_stream(&self, stream_id: &str) -> EventStream<Version>;
     fn event_appended(&self) -> EventRead<Payload, Meta, Version>; //TODO Observable will come here
 }
 
