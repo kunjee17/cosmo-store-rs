@@ -1,7 +1,7 @@
 pub trait Aggregate<State, Command, Event> {
-    fn init() -> State;
-    fn apply(state: &State, event: &Event) -> State;
-    fn execute(state: &State, command: &Command) -> Vec<Event>;
+    fn init(&self) -> State;
+    fn apply(&self,state: &State, event: &Event) -> State;
+    fn execute(&self,state: &State, command: &Command) -> Vec<Event>;
 }
 
 #[cfg(test)]
@@ -62,14 +62,17 @@ mod tests {
         }
     }
 
-    struct TodoAggregate;
+    #[derive(Clone, Debug)]
+    struct TodoAggregate {
+        initial_state : TodoState
+    }
 
     impl Aggregate<TodoState, TodoCommand, TodoEvent> for TodoAggregate {
-        fn init() -> TodoState {
-            TodoState::init()
+        fn init(&self) -> TodoState {
+            self.clone().initial_state
         }
 
-        fn apply(state: &TodoState, event: &TodoEvent) -> TodoState {
+        fn apply(&self, state: &TodoState, event: &TodoEvent) -> TodoState {
             match event {
                 TodoEvent::TodoAdded(t) => {
                     let new_state = Todo {
@@ -118,7 +121,7 @@ mod tests {
             }
         }
 
-        fn execute(state: &TodoState, command: &TodoCommand) -> Vec<TodoEvent> {
+        fn execute(&self, state: &TodoState, command: &TodoCommand) -> Vec<TodoEvent> {
             match command {
                 TodoCommand::AddTodo(t) => vec![TodoEvent::TodoAdded(t.clone())],
                 TodoCommand::RemoveTodo(t) => vec![TodoEvent::TodoRemoved(t.clone())],
@@ -127,6 +130,10 @@ mod tests {
             }
         }
     }
+
+    const TODO_AGGREGATE : TodoAggregate = TodoAggregate {
+        initial_state: TodoState::init()
+    };
 
 
     #[test]
@@ -137,15 +144,15 @@ mod tests {
     #[test]
     fn init_state() {
         assert_eq!(
-            TodoAggregate::init().todos.len(),
+            TODO_AGGREGATE.init().todos.len(),
             TodoState::init().todos.len()
         )
     }
 
     #[test]
     fn add_state() {
-        let events = TodoAggregate::execute(
-            &TodoAggregate::init(),
+        let events = TODO_AGGREGATE.execute(
+            &TODO_AGGREGATE.init(),
             &TodoCommand::AddTodo(AddTodo {
                 id: Default::default(),
                 name: "Some Task".to_string(),
@@ -156,7 +163,7 @@ mod tests {
         assert_eq!(events.len(), 1);
         let state = events
             .iter()
-            .fold(TodoAggregate::init(), |a, b| TodoAggregate::apply (&a, &b));
+            .fold(TODO_AGGREGATE.init(), |a, b| TODO_AGGREGATE.apply (&a, &b));
 
         assert_eq!(state.todos.len(), 1);
     }
