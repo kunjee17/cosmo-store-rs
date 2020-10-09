@@ -1,3 +1,4 @@
+use anyhow::Result;
 use async_trait::async_trait;
 use chrono::NaiveDateTime;
 use uuid::Uuid;
@@ -87,30 +88,30 @@ pub trait EventStore<Payload, Meta, Version> {
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: &EventWrite<Payload, Meta>,
-    ) -> EventRead<Payload, Meta, Version>;
+    ) -> Result<EventRead<Payload, Meta, Version>>;
     async fn append_events(
         &self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: Vec<EventWrite<Payload, Meta>>,
-    ) -> Vec<EventRead<Payload, Meta, Version>>;
+    ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
     async fn get_event(
         &self,
         stream_id: &str,
         version: &Version,
-    ) -> EventRead<Payload, Meta, Version>;
+    ) -> Result<EventRead<Payload, Meta, Version>>;
     async fn get_events(
         &self,
         stream_id: &str,
         version: &EventsReadRange<Version>,
-    ) -> Vec<EventRead<Payload, Meta, Version>>;
+    ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
     async fn get_events_by_correlation_id(
         &self,
         correlation_id: &Uuid,
-    ) -> Vec<EventRead<Payload, Meta, Version>>;
-    async fn get_streams(&self, filter: &StreamsReadFilter) -> Vec<EventStream<Version>>;
-    async fn get_stream(&self, stream_id: &str) -> EventStream<Version>;
-    fn event_appended(&self) -> EventRead<Payload, Meta, Version>; //TODO Observable will come here
+    ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
+    async fn get_streams(&self, filter: &StreamsReadFilter) -> Result<Vec<EventStream<Version>>>;
+    async fn get_stream(&self, stream_id: &str) -> Result<EventStream<Version>>;
+    fn event_appended(&self) -> Result<EventRead<Payload, Meta, Version>>; //TODO Observable will come here
 }
 
 #[cfg(test)]
