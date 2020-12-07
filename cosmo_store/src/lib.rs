@@ -111,7 +111,11 @@ pub trait EventStore<Payload, Meta, Version> {
     ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
     async fn get_streams(&self, filter: &StreamsReadFilter) -> Result<Vec<EventStream<Version>>>;
     async fn get_stream(&self, stream_id: &str) -> Result<EventStream<Version>>;
-    fn event_appended(&self) -> Result<EventRead<Payload, Meta, Version>>; //TODO Observable will come here
+}
+
+pub trait Version<Version> {
+    // fn validate_version(&self, version: &ExpectedVersion<Version>, next_ver: Version) -> Result<Version>;
+    fn next_version(&self, version: &ExpectedVersion<Version>) -> Result<Version>;
 }
 
 #[cfg(test)]
