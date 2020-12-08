@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 #[derive(Clone, Debug)]
@@ -33,8 +33,7 @@ pub enum StreamsReadFilter {
 pub struct EventStream<Version> {
     pub id: String,
     pub last_version: Version,
-    pub last_updated_utc: NaiveDateTime,
-    pub created_by: String,
+    pub last_updated_utc: DateTime<Utc>
 }
 
 #[derive(Clone, Debug)]
@@ -57,14 +56,14 @@ pub struct EventRead<Payload, Meta, Version> {
     pub name: String,
     pub data: Payload,
     pub metadata: Option<Meta>,
-    pub created_utc: NaiveDateTime,
+    pub created_utc: DateTime<Utc>,
 }
 
-impl<Payload: Copy + Clone, Meta: Copy + Clone, Version> EventRead<Payload, Meta, Version> {
+impl<Payload: Clone, Meta: Clone, Version> EventRead<Payload, Meta, Version> {
     pub fn from_event_write(
         stream_id: &str,
         version: Version,
-        created_utc: NaiveDateTime,
+        created_utc: DateTime<Utc>,
         event_write: &EventWrite<Payload, Meta>,
     ) -> EventRead<Payload, Meta, Version> {
         EventRead {
@@ -73,8 +72,8 @@ impl<Payload: Copy + Clone, Meta: Copy + Clone, Version> EventRead<Payload, Meta
             correlation_id: event_write.correlation_id.to_string(),
             causation_id: event_write.causation_id.to_string(),
             stream_id: stream_id.to_string(),
-            data: event_write.data,
-            metadata: event_write.metadata,
+            data: event_write.data.clone(),
+            metadata: event_write.metadata.clone(),
             created_utc,
             version,
         }

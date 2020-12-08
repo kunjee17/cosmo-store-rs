@@ -15,9 +15,9 @@ pub struct EventStoreSQLX {
 
 #[async_trait]
 impl<Payload, Meta> EventStore<Payload, Meta, EventVersion> for EventStoreSQLX
-    where
-        Payload: Default + Send + Sync + 'static,
-        Meta: Default + Send + Sync + 'static,
+where
+    Payload: Default + Send + Sync + 'static,
+    Meta: Default + Send + Sync + 'static,
 {
     async fn append_event(
         &self,

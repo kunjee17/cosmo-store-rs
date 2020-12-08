@@ -1,11 +1,9 @@
+use anyhow::{bail, Result};
 use cosmo_store::{ExpectedVersion, Version};
-use anyhow::{Result, bail};
 
 fn validate_version(version: &ExpectedVersion<u64>, next_ver: u64) -> Result<u64> {
     match version {
-        ExpectedVersion::Any => {
-            Ok(next_ver)
-        }
+        ExpectedVersion::Any => Ok(next_ver),
         ExpectedVersion::NoStream => {
             if next_ver > 1_u64 {
                 bail!("ESERROR_VERSION_STREAMEXISTS: Stream was expected to be empty, but contains {} events", next_ver - 1_u64)
@@ -32,12 +30,11 @@ impl Version<u64> for EventVersion {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::EventVersion;
-    use cosmo_store::{Version, ExpectedVersion};
     use crate::event_version::EventVersion;
+    use crate::EventVersion;
+    use cosmo_store::{ExpectedVersion, Version};
 
     fn test_version() {
         let version = EventVersion(1_u64);
@@ -46,10 +43,9 @@ mod tests {
     fn next_version() {
         let version = EventVersion(1_u64);
         let res = version.next_version(&ExpectedVersion::Any).unwrap();
-        assert_eq!(2_u64,  res)
+        assert_eq!(2_u64, res)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

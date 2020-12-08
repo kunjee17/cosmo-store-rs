@@ -1,7 +1,5 @@
-mod event_version;
 mod event_store;
-
-
+mod event_version;
 
 #[cfg(test)]
 mod tests {
