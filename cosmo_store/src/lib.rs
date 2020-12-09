@@ -83,13 +83,13 @@ impl<Payload: Clone, Meta: Clone, Version> EventRead<Payload, Meta, Version> {
 #[async_trait]
 pub trait EventStore<Payload, Meta, Version> {
     async fn append_event(
-        &self,
+        &mut self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: &EventWrite<Payload, Meta>,
     ) -> Result<EventRead<Payload, Meta, Version>>;
     async fn append_events(
-        &self,
+        &mut self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: Vec<EventWrite<Payload, Meta>>,

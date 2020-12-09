@@ -22,7 +22,7 @@ fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> R
 }
 
 #[derive(Clone,Debug)]
-pub struct EventVersion(u32);
+pub struct EventVersion(pub u32);
 
 impl EventVersion {
     pub fn add(&self, a: u32) -> EventVersion {
@@ -46,10 +46,13 @@ mod tests {
     use crate::event_version::EventVersion;
     use cosmo_store::{ExpectedVersion, Version};
 
+    #[test]
     fn test_version() {
         let version = EventVersion(1_u32);
         assert_eq!(1_u32, version.0);
     }
+
+    #[test]
     fn next_version() {
         let version = EventVersion(1_u32);
         let res = version.next_version(&ExpectedVersion::Any).unwrap();
