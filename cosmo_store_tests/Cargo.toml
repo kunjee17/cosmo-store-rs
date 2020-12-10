@@ -1,5 +1,5 @@
 [package]
-name = "cosmo_store_in_memory"
+name = "cosmo_store_tests"
 version = "0.1.0"
 authors = ["Kunjan Dalal <kunjee17@gmail.com>"]
 edition = "2018"
@@ -8,11 +8,4 @@ edition = "2018"
 
 [dependencies]
 cosmo_store = { path = "../cosmo_store" }
-anyhow = "1.0"
-async-trait = "0.1"
-chrono = "0.4"
 uuid = { version = "0.8", default-features = false, features = ["serde", "v4"] }
-
-[dev-dependencies]
-cosmo_store_tests = {path = "../cosmo_store_tests"}
-actix-rt = "*"
