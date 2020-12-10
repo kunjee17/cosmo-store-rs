@@ -8,11 +8,16 @@ use cosmo_store::{
 };
 use std::collections::HashMap;
 use uuid::Uuid;
-use std::collections::hash_map::RandomState;
 
 pub struct EventStoreInMemory<Payload, Meta, Version> {
     streams: HashMap<String, EventStream<Version>>,
     events: HashMap<String, EventRead<Payload, Meta, Version>>,
+}
+
+impl<Payload: Clone, Meta: Clone> Default for EventStoreInMemory<Payload, Meta, EventVersion> {
+    fn default() -> Self {
+        EventStoreInMemory::new()
+    }
 }
 
 impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion> {
@@ -27,7 +32,7 @@ impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion
         let res: Vec<EventStream<EventVersion>> = keys
             .iter()
             .map(|x| self.streams.get(x).unwrap())
-            .map(|x| x.clone())
+            .cloned()
             .collect();
         res
     }
@@ -35,7 +40,7 @@ impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion
         &mut self,
         stream_id: &str,
         version: &ExpectedVersion<EventVersion>,
-        payload: &Vec<EventWrite<Payload, Meta>>,
+        payload: Vec<EventWrite<Payload, Meta>>,
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
         let exist: Option<&EventStream<EventVersion>> = self.streams.get(stream_id);
         let last: (EventVersion, Option<&EventStream<EventVersion>>) = match exist {
@@ -69,7 +74,6 @@ impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion
         // Updating EVENTS
         ops.iter().for_each(|x| {
             let _ = self.events.insert(x.id.to_string(), x.clone());
-            ()
         });
         Ok(ops)
     }
@@ -100,11 +104,11 @@ where
         version: &ExpectedVersion<EventVersion>,
         payload: Vec<EventWrite<Payload, Meta>>,
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
-        if payload.len() == 0 {
+        if payload.is_empty() {
             return Ok(Vec::new());
         }
 
-        self.process_events(stream_id, version, &payload).await
+        self.process_events(stream_id, version, payload).await
     }
 
     async fn get_event(
@@ -116,8 +120,8 @@ where
             from_version: version.clone(),
             to_version: EventVersion(version.0 + 1),
         };
-        let EVENTS = self.get_events(stream_id, &filter).await?;
-        Ok(EVENTS[0].clone())
+        let events = self.get_events(stream_id, &filter).await?;
+        Ok(events[0].clone())
     }
 
     async fn get_events(
@@ -125,32 +129,32 @@ where
         stream_id: &str,
         version: &EventsReadRange<EventVersion>,
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
-        let EVENTS: Vec<EventRead<Payload, Meta, EventVersion>> = self
+        let events: Vec<EventRead<Payload, Meta, EventVersion>> = self
             .events
             .values()
-            .filter(|x| x.stream_id == stream_id.to_string())
-            .map(|x| x.clone())
+            .filter(|x| x.stream_id == *stream_id)
+            .cloned()
             .collect();
 
         let mut fetch = match version {
-            EventsReadRange::AllEvents => EVENTS,
-            EventsReadRange::FromVersion(v) => EVENTS
+            EventsReadRange::AllEvents => events,
+            EventsReadRange::FromVersion(v) => events
                 .iter()
                 .filter(|p| p.version.0 >= v.0)
-                .map(|x| x.clone())
+                .cloned()
                 .collect(),
-            EventsReadRange::ToVersion(v) => EVENTS
+            EventsReadRange::ToVersion(v) => events
                 .iter()
                 .filter(|p| p.version.0 > 0 && p.version.0 <= v.0)
-                .map(|x| x.clone())
+                .cloned()
                 .collect(),
             EventsReadRange::VersionRange {
                 from_version,
                 to_version,
-            } => EVENTS
+            } => events
                 .iter()
                 .filter(|p| p.version.0 >= from_version.0 && p.version.0 <= to_version.0)
-                .map(|x| x.clone())
+                .cloned()
                 .collect(),
         };
 
@@ -166,7 +170,7 @@ where
             .events
             .values()
             .filter(|x| x.correlation_id == Some(correlation_id.to_string()))
-            .map(|x| x.clone())
+            .cloned()
             .collect())
     }
 
@@ -175,7 +179,7 @@ where
         filter: &StreamsReadFilter,
     ) -> Result<Vec<EventStream<EventVersion>>> {
         match filter {
-            StreamsReadFilter::AllStreams => Ok(self.streams.values().map(|p| p.clone()).collect()),
+            StreamsReadFilter::AllStreams => Ok(self.streams.values().cloned().collect()),
             StreamsReadFilter::StartsWith(c) => {
                 let keys: Vec<String> = self
                     .streams
