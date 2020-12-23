@@ -24,7 +24,7 @@ impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion
     pub fn new() -> EventStoreInMemory<Payload, Meta, EventVersion> {
         EventStoreInMemory {
             streams: HashMap::new(),
-            events: HashMap::new()
+            events: HashMap::new(),
         }
     }
 
