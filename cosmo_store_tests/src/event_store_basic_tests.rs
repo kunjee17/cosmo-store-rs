@@ -1,6 +1,6 @@
 use crate::event_generator::{get_event, get_stream_id};
 use cosmo_store::{EventRead, EventStore, EventWrite, EventsReadRange, ExpectedVersion};
-use std::ops::{RangeInclusive};
+use std::ops::RangeInclusive;
 
 #[derive(Clone, Debug)]
 pub struct Payload {

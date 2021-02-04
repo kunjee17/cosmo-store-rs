@@ -1,0 +1,21 @@
+[package]
+name = "cosmo_store_sqlx_postgres"
+version = "0.1.0"
+authors = ["Kunjan Dalal <kunjee17@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cosmo_store = { path = "../cosmo_store" }
+anyhow = "1.0"
+futures = "0.3"
+async-trait = "0.1"
+uuid = "0.8"
+sqlx = { version = "0.4.2", features = [ "runtime-actix-rustls", "postgres", "uuid", "chrono", "json" ] }
+
+
+
+[dev-dependencies]
+cosmo_store_tests = {path = "../cosmo_store_tests"}
+actix-rt = "*"

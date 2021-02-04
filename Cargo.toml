@@ -1,2 +1,2 @@
 [workspace]
-members = ["cosmo_store", "cosmo_store_util", "cosmo_store_in_memory"]
+members = ["cosmo_store", "cosmo_store_util", "cosmo_store_in_memory", "cosmo_store_sqlx_postgres"]
