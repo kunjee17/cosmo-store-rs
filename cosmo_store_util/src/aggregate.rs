@@ -6,7 +6,7 @@ pub trait Aggregate<State, Command, Event> {
 
 #[cfg(test)]
 mod tests {
-    use crate::Aggregate;
+    use crate::aggregate::Aggregate;
     use uuid::Uuid;
 
     #[derive(Clone, Debug)]

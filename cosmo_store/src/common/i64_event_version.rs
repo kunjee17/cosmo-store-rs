@@ -6,12 +6,12 @@ use crate::types::expected_version::ExpectedVersion;
 use anyhow::{bail, Result};
 use chrono::Utc;
 
-fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> Result<u32> {
+fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: i64) -> Result<i64> {
     match version {
         ExpectedVersion::Any => Ok(next_ver),
         ExpectedVersion::NoStream => {
-            if next_ver > 1_u32 {
-                bail!("ESERROR_VERSION_STREAMEXISTS: Stream was expected to be empty, but contains {} events", next_ver - 1_u32)
+            if next_ver > 1_i64 {
+                bail!("ESERROR_VERSION_STREAMEXISTS: Stream was expected to be empty, but contains {} events", next_ver - 1_i64)
             } else {
                 Ok(next_ver)
             }
@@ -27,21 +27,21 @@ fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> R
 }
 
 #[derive(Clone, Debug)]
-pub struct EventVersion(pub u32);
+pub struct EventVersion(pub i64);
 
 impl EventVersion {
-    pub fn add(&self, a: u32) -> EventVersion {
+    pub fn add(&self, a: i64) -> EventVersion {
         EventVersion(self.0 + a)
     }
 
-    pub fn new(a: u32) -> EventVersion {
+    pub fn new(a: i64) -> EventVersion {
         EventVersion(a)
     }
 }
 
 impl Version<EventVersion> for EventVersion {
     fn next_version(&self, version: &ExpectedVersion<EventVersion>) -> Result<EventVersion> {
-        let res = validate_version(version, self.0 + 1_u32)?;
+        let res = validate_version(version, self.0 + 1_i64)?;
         Ok(EventVersion(res))
     }
 }
@@ -54,13 +54,13 @@ pub fn event_writes_to_reads<Payload: Clone, Meta: Clone>(
     payload
         .iter()
         .enumerate()
-        .map(|(i, e)| EventRead::from_event_write(stream_id, next.add(i as u32), Utc::now(), e))
+        .map(|(i, e)| EventRead::from_event_write(stream_id, next.add(i as i64), Utc::now(), e))
         .collect()
 }
 
 pub fn updated_stream(
     stream_id: &str,
-    v: u32,
+    v: i64,
     last: (EventVersion, Option<EventStream<EventVersion>>),
 ) -> EventStream<EventVersion> {
     match last.1 {
@@ -79,20 +79,20 @@ pub fn updated_stream(
 
 #[cfg(test)]
 mod tests {
-    use crate::common::u32_event_version::EventVersion;
+    use crate::common::i64_event_version::EventVersion;
     use crate::traits::version::Version;
     use crate::types::expected_version::ExpectedVersion;
 
     #[test]
     fn test_version() {
-        let version = EventVersion(1_u32);
-        assert_eq!(1_u32, version.0);
+        let version = EventVersion(1_i64);
+        assert_eq!(1_i64, version.0);
     }
 
     #[test]
     fn next_version() {
-        let version = EventVersion(1_u32);
+        let version = EventVersion(1_i64);
         let res = version.next_version(&ExpectedVersion::Any).unwrap();
-        assert_eq!(2_u32, res.0)
+        assert_eq!(2_i64, res.0)
     }
 }

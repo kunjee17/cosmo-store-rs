@@ -10,6 +10,9 @@ edition = "2018"
 cosmo_store = { path = "../cosmo_store" }
 anyhow = "1.0"
 futures = "0.3"
+chrono = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 async-trait = "0.1"
 uuid = "0.8"
 sqlx = { version = "0.4.2", features = [ "runtime-actix-rustls", "postgres", "uuid", "chrono", "json" ] }

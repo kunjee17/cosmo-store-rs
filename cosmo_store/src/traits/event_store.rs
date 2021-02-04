@@ -1,12 +1,12 @@
+use crate::types::event_read::EventRead;
+use crate::types::event_read_range::EventsReadRange;
+use crate::types::event_stream::EventStream;
+use crate::types::event_write::EventWrite;
+use crate::types::expected_version::ExpectedVersion;
+use crate::types::stream_read_filter::StreamsReadFilter;
 use anyhow::Result;
 use async_trait::async_trait;
 use uuid::Uuid;
-use crate::types::expected_version::ExpectedVersion;
-use crate::types::event_write::EventWrite;
-use crate::types::event_read::EventRead;
-use crate::types::event_read_range::EventsReadRange;
-use crate::types::stream_read_filter::StreamsReadFilter;
-use crate::types::event_stream::EventStream;
 
 #[async_trait]
 pub trait EventStore<Payload, Meta, Version> {
@@ -35,6 +35,10 @@ pub trait EventStore<Payload, Meta, Version> {
     async fn get_events_by_correlation_id(
         &self,
         correlation_id: &Uuid,
+    ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
+    async fn get_events_by_causation_id(
+        &self,
+        causation_id: &Uuid,
     ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
     async fn get_streams(&self, filter: &StreamsReadFilter) -> Result<Vec<EventStream<Version>>>;
     async fn get_stream(&self, stream_id: &str) -> Result<EventStream<Version>>;

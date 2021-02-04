@@ -1,17 +1,16 @@
 use anyhow::{bail, Result};
 use async_trait::async_trait;
-use chrono::Utc;
+use cosmo_store::common::u32_event_version::{event_writes_to_reads, updated_stream, EventVersion};
+use cosmo_store::traits::event_store::EventStore;
+use cosmo_store::traits::version::Version;
+use cosmo_store::types::event_read::EventRead;
+use cosmo_store::types::event_read_range::EventsReadRange;
+use cosmo_store::types::event_stream::EventStream;
+use cosmo_store::types::event_write::EventWrite;
+use cosmo_store::types::expected_version::ExpectedVersion;
+use cosmo_store::types::stream_read_filter::StreamsReadFilter;
 use std::collections::HashMap;
 use uuid::Uuid;
-use cosmo_store::types::event_stream::EventStream;
-use cosmo_store::types::event_read::EventRead;
-use cosmo_store::common::u32_event_version::EventVersion;
-use cosmo_store::types::expected_version::ExpectedVersion;
-use cosmo_store::types::event_write::EventWrite;
-use cosmo_store::traits::version::Version;
-use cosmo_store::traits::event_store::EventStore;
-use cosmo_store::types::event_read_range::EventsReadRange;
-use cosmo_store::types::stream_read_filter::StreamsReadFilter;
 
 pub struct EventStoreInMemory<Payload, Meta, Version> {
     streams: HashMap<String, EventStream<Version>>,
@@ -47,30 +46,16 @@ impl<Payload: Clone, Meta: Clone> EventStoreInMemory<Payload, Meta, EventVersion
         payload: Vec<EventWrite<Payload, Meta>>,
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
         let exist: Option<&EventStream<EventVersion>> = self.streams.get(stream_id);
-        let last: (EventVersion, Option<&EventStream<EventVersion>>) = match exist {
-            Some(r) => (r.last_version.clone(), Some(r)),
+        let last: (EventVersion, Option<EventStream<EventVersion>>) = match exist {
+            Some(r) => (r.last_version.clone(), Some(r.clone())),
             None => (EventVersion::new(0), None),
         };
 
         let next = last.0.next_version(version)?;
 
-        let ops: Vec<EventRead<Payload, Meta, EventVersion>> = payload
-            .iter()
-            .enumerate()
-            .map(|(i, e)| EventRead::from_event_write(stream_id, next.add(i as u32), Utc::now(), e))
-            .collect();
-        let updated_stream = match last.1 {
-            Some(r) => EventStream {
-                last_version: r.last_version.add(payload.len() as u32),
-                last_updated_utc: Utc::now(),
-                ..(r.clone())
-            },
-            None => EventStream {
-                id: stream_id.to_string(),
-                last_version: EventVersion::new(payload.len() as u32),
-                last_updated_utc: Utc::now(),
-            },
-        };
+        let ops: Vec<EventRead<Payload, Meta, EventVersion>> =
+            event_writes_to_reads(stream_id, &next, &payload);
+        let updated_stream = updated_stream(stream_id, payload.len() as u32, last);
         // Updating stream
         self.streams
             .entry(stream_id.to_string())
@@ -173,7 +158,19 @@ where
         Ok(self
             .events
             .values()
-            .filter(|x| x.correlation_id == Some(correlation_id.to_string()))
+            .filter(|x| x.correlation_id == Some(*correlation_id))
+            .cloned()
+            .collect())
+    }
+
+    async fn get_events_by_causation_id(
+        &self,
+        causation_id: &Uuid,
+    ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
+        Ok(self
+            .events
+            .values()
+            .filter(|x| x.causation_id == Some(*causation_id))
             .cloned()
             .collect())
     }

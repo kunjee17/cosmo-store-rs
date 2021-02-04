@@ -1,10 +1,10 @@
-use uuid::Uuid;
 use cosmo_store::types::event_write::EventWrite;
+use uuid::Uuid;
 
 pub fn get_event<Payload, Meta>(i: i32, data: Payload) -> EventWrite<Payload, Meta> {
     let (corr, caus) = match (i % 2, i % 3) {
-        (0, _) => (Some(Uuid::new_v4().to_string()), None),
-        (_, 0) => (None, Some(Uuid::new_v4().to_string())),
+        (0, _) => (Some(Uuid::new_v4()), None),
+        (_, 0) => (None, Some(Uuid::new_v4())),
         (_, _) => (None, None),
     };
 
