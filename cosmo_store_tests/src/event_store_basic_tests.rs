@@ -1,12 +1,17 @@
 use crate::event_generator::{get_event, get_stream_id};
-use cosmo_store::{EventRead, EventStore, EventWrite, EventsReadRange, ExpectedVersion};
-use std::ops::{RangeInclusive};
+use cosmo_store::traits::event_store::EventStore;
+use cosmo_store::types::event_read::EventRead;
+use cosmo_store::types::event_read_range::EventsReadRange;
+use cosmo_store::types::event_write::EventWrite;
+use cosmo_store::types::expected_version::ExpectedVersion;
+use serde::{Deserialize, Serialize};
+use std::ops::RangeInclusive;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Payload {
     pub name: String,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Meta {}
 
 fn get_events(x: RangeInclusive<i32>) -> Vec<EventWrite<Payload, Meta>> {

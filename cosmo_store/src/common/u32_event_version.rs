@@ -1,5 +1,10 @@
+use crate::traits::version::Version;
+use crate::types::event_read::EventRead;
+use crate::types::event_stream::EventStream;
+use crate::types::event_write::EventWrite;
+use crate::types::expected_version::ExpectedVersion;
 use anyhow::{bail, Result};
-use cosmo_store::{ExpectedVersion, Version};
+use chrono::Utc;
 
 fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> Result<u32> {
     match version {
@@ -41,10 +46,42 @@ impl Version<EventVersion> for EventVersion {
     }
 }
 
+pub fn event_writes_to_reads<Payload: Clone, Meta: Clone>(
+    stream_id: &str,
+    next: &EventVersion,
+    payload: &[EventWrite<Payload, Meta>],
+) -> Vec<EventRead<Payload, Meta, EventVersion>> {
+    payload
+        .iter()
+        .enumerate()
+        .map(|(i, e)| EventRead::from_event_write(stream_id, next.add(i as u32), Utc::now(), e))
+        .collect()
+}
+
+pub fn updated_stream(
+    stream_id: &str,
+    v: u32,
+    last: (EventVersion, Option<EventStream<EventVersion>>),
+) -> EventStream<EventVersion> {
+    match last.1 {
+        Some(r) => EventStream {
+            last_version: r.last_version.add(v),
+            last_updated_utc: Utc::now(),
+            ..(r)
+        },
+        None => EventStream {
+            id: stream_id.to_string(),
+            last_version: EventVersion::new(v),
+            last_updated_utc: Utc::now(),
+        },
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::event_version::EventVersion;
-    use cosmo_store::{ExpectedVersion, Version};
+    use crate::common::u32_event_version::EventVersion;
+    use crate::traits::version::Version;
+    use crate::types::expected_version::ExpectedVersion;
 
     #[test]
     fn test_version() {
