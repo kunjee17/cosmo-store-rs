@@ -1,13 +1,17 @@
-use crate::event_version::EventVersion;
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use chrono::Utc;
-use cosmo_store::{
-    EventRead, EventStore, EventStream, EventWrite, EventsReadRange, ExpectedVersion,
-    StreamsReadFilter, Version,
-};
 use std::collections::HashMap;
 use uuid::Uuid;
+use cosmo_store::types::event_stream::EventStream;
+use cosmo_store::types::event_read::EventRead;
+use cosmo_store::common::u32_event_version::EventVersion;
+use cosmo_store::types::expected_version::ExpectedVersion;
+use cosmo_store::types::event_write::EventWrite;
+use cosmo_store::traits::version::Version;
+use cosmo_store::traits::event_store::EventStore;
+use cosmo_store::types::event_read_range::EventsReadRange;
+use cosmo_store::types::stream_read_filter::StreamsReadFilter;
 
 pub struct EventStoreInMemory<Payload, Meta, Version> {
     streams: HashMap<String, EventStream<Version>>,

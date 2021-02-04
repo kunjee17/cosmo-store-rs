@@ -1,5 +1,6 @@
-use cosmo_store::EventWrite;
 use uuid::Uuid;
+use cosmo_store::types::event_write::EventWrite;
+
 pub fn get_event<Payload, Meta>(i: i32, data: Payload) -> EventWrite<Payload, Meta> {
     let (corr, caus) = match (i % 2, i % 3) {
         (0, _) => (Some(Uuid::new_v4().to_string()), None),

@@ -1,5 +1,6 @@
 use anyhow::{bail, Result};
-use cosmo_store::{ExpectedVersion, Version};
+use crate::types::expected_version::ExpectedVersion;
+use crate::traits::version::Version;
 
 fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> Result<u32> {
     match version {
@@ -43,8 +44,9 @@ impl Version<EventVersion> for EventVersion {
 
 #[cfg(test)]
 mod tests {
-    use crate::event_version::EventVersion;
-    use cosmo_store::{ExpectedVersion, Version};
+    use crate::common::u32_event_version::EventVersion;
+    use crate::traits::version::Version;
+    use crate::types::expected_version::ExpectedVersion;
 
     #[test]
     fn test_version() {

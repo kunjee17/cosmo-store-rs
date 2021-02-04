@@ -1,12 +1,13 @@
-use cosmo_store::{EventRead, EventStore, EventWrite, EventsReadRange, ExpectedVersion};
 use cosmo_store_in_memory::event_store::EventStoreInMemory;
-use cosmo_store_in_memory::event_version::EventVersion;
 use cosmo_store_tests::event_generator::{get_event, get_stream_id};
 use cosmo_store_tests::event_store_basic_tests as bt;
 use cosmo_store_tests::event_store_basic_tests::{check_position, Meta, Payload};
 use std::collections::HashMap;
 use std::future::Future;
 use std::panic;
+use cosmo_store::common::u32_event_version::EventVersion;
+use cosmo_store::traits::event_store::EventStore;
+use cosmo_store::types::event_read::EventRead;
 
 fn setup() {
     println!("Event Store will be initialized here...");
