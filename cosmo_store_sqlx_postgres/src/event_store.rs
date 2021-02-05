@@ -126,7 +126,7 @@ where
     Meta: Send + Sync + 'static + Clone + Serialize + for<'de> Deserialize<'de>,
 {
     async fn append_event(
-        &mut self,
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<EventVersion>,
         payload: &EventWrite<Payload, Meta>,
@@ -138,7 +138,7 @@ where
     }
 
     async fn append_events(
-        &mut self,
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<EventVersion>,
         payload: Vec<EventWrite<Payload, Meta>>,
