@@ -26,7 +26,7 @@ fn validate_version(version: &ExpectedVersion<EventVersion>, next_ver: u32) -> R
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EventVersion(pub u32);
 
 impl EventVersion {

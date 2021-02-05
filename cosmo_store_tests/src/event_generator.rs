@@ -1,4 +1,6 @@
+use crate::event_store_basic_tests::{Meta, Payload};
 use cosmo_store::types::event_write::EventWrite;
+use std::ops::RangeInclusive;
 use uuid::Uuid;
 
 pub fn get_event<Payload, Meta>(i: i32, data: Payload) -> EventWrite<Payload, Meta> {
@@ -16,6 +18,18 @@ pub fn get_event<Payload, Meta>(i: i32, data: Payload) -> EventWrite<Payload, Me
         data,
         metadata: None,
     }
+}
+
+pub fn get_events(x: RangeInclusive<i32>) -> Vec<EventWrite<Payload, Meta>> {
+    x.map(|x| {
+        get_event(
+            x,
+            Payload {
+                name: format!("Todo Event {}", x),
+            },
+        )
+    })
+    .collect()
 }
 
 pub fn get_stream_id() -> String {

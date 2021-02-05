@@ -12,7 +12,7 @@ use cosmo_store::types::stream_read_filter::StreamsReadFilter;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-pub struct EventStoreInMemory<Payload, Meta, Version> {
+pub struct EventStoreInMemory<Payload, Meta, Version : Eq + PartialEq> {
     streams: HashMap<String, EventStream<Version>>,
     events: HashMap<String, EventRead<Payload, Meta, Version>>,
 }

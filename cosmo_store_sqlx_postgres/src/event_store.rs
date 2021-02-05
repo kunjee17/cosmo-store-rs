@@ -56,16 +56,18 @@ impl EventStoreSQLXPostgres {
         payload: Vec<EventWrite<Payload, Meta>>,
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
         let pool = self.pool();
-        let exist = sqlx::query_as::<_, DBEventStream>(
-            "select * from cs_stream_person where id = ? limit 1;",
-        )
-        .bind(stream_id)
-        .fetch_one(&pool)
-        .await;
-        let last: (EventVersion, Option<EventStream<EventVersion>>) = match exist {
+        let exist_query = format!(
+            "select * from {0} where id = $1 limit 1",
+            self.streams_table_name()
+        );
+        let exist = sqlx::query_as::<_, DBEventStream>(&exist_query)
+            .bind(stream_id)
+            .fetch_one(&pool)
+            .await;
+        let last: (EventVersion, Option<EventStream<EventVersion>>) = match &exist {
             Ok(r) => (
                 EventVersion::new(r.last_version),
-                Some(EventStream::from(r)),
+                Some(EventStream::from(r.clone())),
             ),
             Err(_) => (EventVersion::new(0), None),
         };
