@@ -26,7 +26,7 @@ where
     return_val
 }
 
-pub async fn append_event<V, F>(mut store: Box<dyn EventStore<Payload, Meta, V>>, assert: F)
+pub async fn append_event<V, F>(store: &dyn EventStore<Payload, Meta, V>, assert: F)
 where
     F: FnOnce(EventRead<Payload, Meta, V>),
     V: Debug + Eq + PartialEq,
@@ -45,7 +45,7 @@ where
     assert(res);
 }
 
-pub async fn append_100_events<V, F>(mut store: Box<dyn EventStore<Payload, Meta, V>>, assert: F)
+pub async fn append_100_events<V, F>(store: &dyn EventStore<Payload, Meta, V>, assert: F)
 where
     F: FnOnce(Vec<EventRead<Payload, Meta, V>>),
     V: Debug + Eq + PartialEq,
@@ -61,7 +61,7 @@ where
 }
 
 pub async fn get_single_event<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     version: &V,
     assert: F,
 ) where
@@ -79,7 +79,7 @@ pub async fn get_single_event<V, F>(
     assert(res);
 }
 
-pub async fn get_all_events<V, F>(mut store: Box<dyn EventStore<Payload, Meta, V>>, assert: F)
+pub async fn get_all_events<V, F>(store: &dyn EventStore<Payload, Meta, V>, assert: F)
 where
     F: FnOnce(Vec<EventRead<Payload, Meta, V>>),
     V: Debug + Eq + PartialEq,
@@ -98,7 +98,7 @@ where
 }
 
 pub async fn get_events_from_version<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     from_version: V,
     assert: F,
 ) where
@@ -119,7 +119,7 @@ pub async fn get_events_from_version<V, F>(
 }
 
 pub async fn get_events_to_version<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     to_version: V,
     assert: F,
 ) where
@@ -140,7 +140,7 @@ pub async fn get_events_to_version<V, F>(
 }
 
 pub async fn get_events_version_range<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     from_version: V,
     to_version: V,
     assert: F,
@@ -168,7 +168,7 @@ pub async fn get_events_version_range<V, F>(
 }
 
 pub async fn fails_to_append_to_existing_version<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     version: V,
     assert: F,
 ) where
@@ -208,7 +208,7 @@ pub async fn fails_to_append_to_existing_version<V, F>(
 }
 
 pub async fn fails_to_append_to_existing_stream_if_is_not_expected_to_exist<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     assert: F,
 ) where
     F: FnOnce(Result<EventRead<Payload, Meta, V>>),
@@ -247,7 +247,7 @@ pub async fn fails_to_append_to_existing_stream_if_is_not_expected_to_exist<V, F
 }
 
 pub async fn appending_no_events_does_not_affect_stream_metadata<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     version: &ExpectedVersion<V>,
     assert: F,
 ) where
@@ -283,7 +283,7 @@ pub async fn appending_no_events_does_not_affect_stream_metadata<V, F>(
 }
 
 pub async fn appending_1000_events_can_be_read_back<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     assert: F,
 ) where
     F: FnOnce(EventStream<V>, Vec<EventRead<Payload, Meta, V>>),
@@ -308,14 +308,14 @@ pub async fn appending_1000_events_can_be_read_back<V, F>(
 }
 
 pub async fn can_read_events_by_correlation_id<V, F>(
-    mut store: Box<dyn EventStore<Payload, Meta, V>>,
+    store: &dyn EventStore<Payload, Meta, V>,
     assert: F,
 ) where
     F: FnOnce(Vec<EventRead<Payload, Meta, V>>),
     V: Debug + Eq + PartialEq,
 {
     async fn add_events_to_stream<V: Eq + PartialEq>(
-        store: &mut Box<dyn EventStore<Payload, Meta, V>>,
+        store: &dyn EventStore<Payload, Meta, V>,
         corr_id: Uuid,
         i: i32,
     ) {
@@ -336,12 +336,12 @@ pub async fn can_read_events_by_correlation_id<V, F>(
     let corr_id = Uuid::new_v4();
 
     for i in 1..=3 {
-        add_events_to_stream(&mut store, corr_id, i).await;
+        add_events_to_stream(store, corr_id, i).await;
     }
 
     let different_corr_id = Uuid::new_v4();
     for i in 1..=3 {
-        add_events_to_stream(&mut store, different_corr_id, i).await;
+        add_events_to_stream(store, different_corr_id, i).await;
     }
 
     let events = store.get_events_by_correlation_id(&corr_id).await.unwrap();

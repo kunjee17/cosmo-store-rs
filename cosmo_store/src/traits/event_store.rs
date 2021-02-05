@@ -14,13 +14,13 @@ where
     Version: Eq + PartialEq,
 {
     async fn append_event(
-        &mut self,
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: &EventWrite<Payload, Meta>,
     ) -> Result<EventRead<Payload, Meta, Version>>;
     async fn append_events(
-        &mut self,
+        &self,
         stream_id: &str,
         version: &ExpectedVersion<Version>,
         payload: Vec<EventWrite<Payload, Meta>>,

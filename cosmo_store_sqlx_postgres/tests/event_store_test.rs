@@ -86,12 +86,11 @@ fn are_ascending(items: Vec<EventRead<Payload, Meta, EventVersion>>) {
 async fn append_event() {
     let name = get_name();
     setup(&name).await;
-    let result =
-        std::panic::AssertUnwindSafe(bt::append_event(Box::new(get_store(&name).await), |res| {
-            assert_eq!(res.version.0, 1_i64)
-        }))
-        .catch_unwind()
-        .await;
+    let result = std::panic::AssertUnwindSafe(bt::append_event(&get_store(&name).await, |res| {
+        assert_eq!(res.version.0, 1_i64)
+    }))
+    .catch_unwind()
+    .await;
 
     teardown(&name).await;
 
@@ -102,15 +101,13 @@ async fn append_event() {
 async fn append_100_events() {
     let name = get_name();
     setup(&name).await;
-    let result = std::panic::AssertUnwindSafe(bt::append_100_events(
-        Box::new(get_store(&name).await),
-        |res| {
+    let result =
+        std::panic::AssertUnwindSafe(bt::append_100_events(&get_store(&name).await, |res| {
             assert_eq!(res.len(), 100);
             are_ascending(res);
-        },
-    ))
-    .catch_unwind()
-    .await;
+        }))
+        .catch_unwind()
+        .await;
     teardown(&name).await;
 
     assert_ok!(result);
@@ -121,7 +118,7 @@ async fn get_single_event() {
     let name = get_name();
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(bt::get_single_event(
-        Box::new(get_store(&name).await),
+        &get_store(&name).await,
         &EventVersion::new(3_i64),
         |res| {
             assert_eq!(res.version.0, 3_i64);
@@ -140,12 +137,9 @@ async fn get_single_event() {
 async fn get_all_events() {
     let name = get_name();
     setup(&name).await;
-    let result = std::panic::AssertUnwindSafe(bt::get_all_events(
-        Box::new(get_store(&name).await),
-        |res| {
-            assert_eq!(res.len(), 10);
-        },
-    ))
+    let result = std::panic::AssertUnwindSafe(bt::get_all_events(&get_store(&name).await, |res| {
+        assert_eq!(res.len(), 10);
+    }))
     .catch_unwind()
     .await;
 
@@ -159,7 +153,7 @@ async fn get_events_from_version() {
     let name = get_name();
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(bt::get_events_from_version(
-        Box::new(get_store(&name).await),
+        &get_store(&name).await,
         EventVersion::new(6),
         |res| {
             assert_eq!(res.len(), 5);
@@ -179,7 +173,7 @@ async fn get_events_to_version() {
     let name = get_name();
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(bt::get_events_to_version(
-        Box::new(get_store(&name).await),
+        &get_store(&name).await,
         EventVersion::new(5),
         |res| {
             assert_eq!(res.len(), 5);
@@ -199,7 +193,7 @@ async fn get_events_version_range() {
     let name = get_name();
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(bt::get_events_version_range(
-        Box::new(get_store(&name).await),
+        &get_store(&name).await,
         EventVersion::new(5),
         EventVersion::new(7),
         |res| {
@@ -220,7 +214,7 @@ async fn fails_to_append_to_existing_version() {
     let name = get_name();
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(bt::fails_to_append_to_existing_version(
-        Box::new(get_store(&name).await),
+        &get_store(&name).await,
         EventVersion::new(1_i64),
         |res| {
             assert_err!(res);
@@ -239,7 +233,7 @@ async fn fails_to_append_to_existing_stream_if_is_not_expected_to_exist() {
     setup(&name).await;
     let result = std::panic::AssertUnwindSafe(
         bt::fails_to_append_to_existing_stream_if_is_not_expected_to_exist(
-            Box::new(get_store(&name).await),
+            &get_store(&name).await,
             |res| {
                 assert_err!(res);
             },
@@ -258,7 +252,7 @@ async fn appending_no_events_does_not_affect_stream_metadata() {
     setup(&name).await;
     let result =
         std::panic::AssertUnwindSafe(bt::appending_no_events_does_not_affect_stream_metadata(
-            Box::new(get_store(&name).await),
+            &get_store(&name).await,
             &ExpectedVersion::Exact(EventVersion::new(1_i64)),
             |stream, stream_after_append| {
                 assert_eq!(stream, stream_after_append);
@@ -278,13 +272,10 @@ async fn appending_1000_events_can_be_read_back() {
     let result = std::panic::AssertUnwindSafe(bt::appending_1000_events_can_be_read_back::<
         EventVersion,
         _,
-    >(
-        Box::new(get_store(&name).await),
-        |stream, events| {
-            assert_eq!(stream.last_version.0, 1000);
-            assert_eq!(events.len(), 1000)
-        },
-    ))
+    >(&get_store(&name).await, |stream, events| {
+        assert_eq!(stream.last_version.0, 1000);
+        assert_eq!(events.len(), 1000)
+    }))
     .catch_unwind()
     .await;
     teardown(&name).await;
@@ -299,7 +290,7 @@ async fn can_read_events_by_correlation_id() {
     let result = std::panic::AssertUnwindSafe(bt::can_read_events_by_correlation_id::<
         EventVersion,
         _,
-    >(Box::new(get_store(&name).await), |events| {
+    >(&get_store(&name).await, |events| {
         let unique_streams: Vec<String> = events
             .iter()
             .map(|x| x.stream_id.to_owned())
