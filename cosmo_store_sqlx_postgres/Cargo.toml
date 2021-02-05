@@ -15,6 +15,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 async-trait = "0.1"
 uuid = "0.8"
+itertools = "0.10"
 sqlx = { version = "0.4.2", features = [ "runtime-actix-rustls", "postgres", "uuid", "chrono", "json" ] }
 
 
@@ -22,3 +23,4 @@ sqlx = { version = "0.4.2", features = [ "runtime-actix-rustls", "postgres", "uu
 [dev-dependencies]
 cosmo_store_tests = {path = "../cosmo_store_tests"}
 actix-rt = "*"
+claim = "0.5.0"

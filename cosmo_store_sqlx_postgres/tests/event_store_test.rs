@@ -1,17 +1,19 @@
-use anyhow::Result;
+#[cfg(test)]
+#[macro_use]
+extern crate claim;
+
 use cosmo_store::common::i64_event_version::EventVersion;
 use cosmo_store::traits::event_store::EventStore;
 use cosmo_store::types::event_read::EventRead;
+use cosmo_store::types::expected_version::ExpectedVersion;
 use cosmo_store_sqlx_postgres::event_store_sqlx_postgres::EventStoreSQLXPostgres;
-use cosmo_store_tests::event_generator::{get_event, get_stream_id};
 use cosmo_store_tests::event_store_basic_tests as bt;
 use cosmo_store_tests::event_store_basic_tests::{check_position, Meta, Payload};
 use futures;
-use futures::{Future, FutureExt};
+use futures::FutureExt;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::Done;
-use std::any::Any;
 use std::panic;
 use uuid::Uuid;
 
@@ -56,14 +58,14 @@ fn get_name() -> String {
 }
 
 // TODO: implement to improve test code. not working as of now
-// async fn run_test<T>(test: T) -> ()
+// async fn run_test<T: Sized>(test: Box<T>) -> ()
 //     where
 //         T: Fn(&str) -> dyn Future<Output=()>,
 // {
 //     let name = Uuid::new_v4().to_simple().to_string();
 //     setup(&name).await;
 //
-//     let result = panic::AssertUnwindSafe(test(&name)).catch_unwind().await;
+//     let result = panic::AssertUnwindSafe(test(&name).await).catch_unwind().await;
 //     test(&name).await;
 //     teardown(&name).await;
 //     assert!(result.is_ok())
@@ -93,7 +95,7 @@ async fn append_event() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -111,7 +113,7 @@ async fn append_100_events() {
     .await;
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -131,7 +133,7 @@ async fn get_single_event() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -149,7 +151,7 @@ async fn get_all_events() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -169,7 +171,7 @@ async fn get_events_from_version() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -189,7 +191,7 @@ async fn get_events_to_version() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
 }
 
 #[actix_rt::test]
@@ -210,5 +212,106 @@ async fn get_events_version_range() {
 
     teardown(&name).await;
 
-    assert!(result.is_ok());
+    assert_ok!(result);
+}
+
+#[actix_rt::test]
+async fn fails_to_append_to_existing_version() {
+    let name = get_name();
+    setup(&name).await;
+    let result = std::panic::AssertUnwindSafe(bt::fails_to_append_to_existing_version(
+        Box::new(get_store(&name).await),
+        EventVersion::new(1_i64),
+        |res| {
+            assert_err!(res);
+        },
+    ))
+    .catch_unwind()
+    .await;
+    teardown(&name).await;
+
+    assert_ok!(result);
+}
+
+#[actix_rt::test]
+async fn fails_to_append_to_existing_stream_if_is_not_expected_to_exist() {
+    let name = get_name();
+    setup(&name).await;
+    let result = std::panic::AssertUnwindSafe(
+        bt::fails_to_append_to_existing_stream_if_is_not_expected_to_exist(
+            Box::new(get_store(&name).await),
+            |res| {
+                assert_err!(res);
+            },
+        ),
+    )
+    .catch_unwind()
+    .await;
+    teardown(&name).await;
+
+    assert_ok!(result);
+}
+
+#[actix_rt::test]
+async fn appending_no_events_does_not_affect_stream_metadata() {
+    let name = get_name();
+    setup(&name).await;
+    let result =
+        std::panic::AssertUnwindSafe(bt::appending_no_events_does_not_affect_stream_metadata(
+            Box::new(get_store(&name).await),
+            &ExpectedVersion::Exact(EventVersion::new(1_i64)),
+            |stream, stream_after_append| {
+                assert_eq!(stream, stream_after_append);
+            },
+        ))
+        .catch_unwind()
+        .await;
+    teardown(&name).await;
+
+    assert_ok!(result);
+}
+
+#[actix_rt::test]
+async fn appending_1000_events_can_be_read_back() {
+    let name = get_name();
+    setup(&name).await;
+    let result = std::panic::AssertUnwindSafe(bt::appending_1000_events_can_be_read_back::<
+        EventVersion,
+        _,
+    >(
+        Box::new(get_store(&name).await),
+        |stream, events| {
+            assert_eq!(stream.last_version.0, 1000);
+            assert_eq!(events.len(), 1000)
+        },
+    ))
+    .catch_unwind()
+    .await;
+    teardown(&name).await;
+
+    assert_ok!(result);
+}
+
+#[actix_rt::test]
+async fn can_read_events_by_correlation_id() {
+    let name = get_name();
+    setup(&name).await;
+    let result = std::panic::AssertUnwindSafe(bt::can_read_events_by_correlation_id::<
+        EventVersion,
+        _,
+    >(Box::new(get_store(&name).await), |events| {
+        let unique_streams: Vec<String> = events
+            .iter()
+            .map(|x| x.stream_id.to_owned())
+            .unique()
+            .sorted()
+            .collect();
+        assert_eq!(unique_streams, vec!["CORR_1", "CORR_2", "CORR_3"]);
+        assert_eq!(events.len(), 30);
+    }))
+    .catch_unwind()
+    .await;
+    teardown(&name).await;
+
+    assert_ok!(result);
 }
