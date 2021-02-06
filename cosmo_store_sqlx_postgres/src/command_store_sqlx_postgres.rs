@@ -42,7 +42,7 @@ impl CommandStoreSQLXPostgres {
     }
 
     pub async fn new(pool: &PgPool, name: &str) -> Result<CommandStoreSQLXPostgres> {
-        let command_name = format!("cs_command_{0}", name);
+        let command_name = format!("cs_commands_{}", name);
         let _ = CommandStoreSQLXPostgres::create_command_table(pool, &command_name).await?;
 
         Ok(CommandStoreSQLXPostgres {
