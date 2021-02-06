@@ -1,3 +1,4 @@
+pub mod command_write;
 pub mod event_read;
 pub mod event_read_range;
 pub mod event_stream;

@@ -102,9 +102,9 @@ impl EventStoreSQLXPostgres {
 
     pub async fn new(pool: &PgPool, name: &str) -> Result<EventStoreSQLXPostgres> {
         // Generate stream name
-        let streams_name = format!("cv_streams_{}", name);
+        let streams_name = format!("cs_streams_{}", name);
         // Generate name for event table
-        let events_name = format!("cv_events_{}", name);
+        let events_name = format!("cs_events_{}", name);
 
         let _ = EventStoreSQLXPostgres::create_stream_table(pool, &streams_name).await?;
         let _ =
