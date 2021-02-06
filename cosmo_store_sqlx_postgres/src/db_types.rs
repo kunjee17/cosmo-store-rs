@@ -42,3 +42,13 @@ pub struct DBEventData {
     pub(crate) metadata: Option<serde_json::Value>,
     pub(crate) created_utc: DateTime<Utc>,
 }
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct DBCommandData {
+    pub(crate) id: Uuid,
+    pub(crate) correlation_id: Uuid,
+    pub(crate) causation_id: Uuid,
+    pub(crate) data: serde_json::Value,
+    pub(crate) name: String,
+    pub(crate) created_utc: DateTime<Utc>,
+}
