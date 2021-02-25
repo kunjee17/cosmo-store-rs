@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sqlx::postgres::PgQueryResult;
+use sqlx::postgres::PgDone;
 use sqlx::PgPool;
 
 #[derive(Debug, Clone)]
@@ -16,7 +16,7 @@ impl CommandStoreSQLXPostgres {
         self.table_name.to_string()
     }
 
-    async fn create_command_table(pool: &PgPool, table_name: &str) -> Result<PgQueryResult> {
+    async fn create_command_table(pool: &PgPool, table_name: &str) -> Result<PgDone> {
         // create table if not exists cs_command_person (
         //     id uuid primary key ,
         // correlation_id uuid not null ,
@@ -37,7 +37,7 @@ impl CommandStoreSQLXPostgres {
             table_name
         );
 
-        let res: PgQueryResult = sqlx::query(&command_create_table).execute(pool).await?;
+        let res: PgDone = sqlx::query(&command_create_table).execute(pool).await?;
         Ok(res)
     }
 
