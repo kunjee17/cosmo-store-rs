@@ -1,5 +1,5 @@
 use anyhow::Result;
-use sqlx::postgres::PgQueryResult;
+use sqlx::postgres::PgDone;
 use sqlx::PgPool;
 
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ impl EventStoreSQLXPostgres {
         self.events_table_name.to_string()
     }
 
-    async fn create_stream_table(pool: &PgPool, streams_name: &str) -> Result<PgQueryResult> {
+    async fn create_stream_table(pool: &PgPool, streams_name: &str) -> Result<PgDone> {
         // create table if not exists cs_stream_person (
         //     id text primary key,
         // last_version bigint not null ,
@@ -44,7 +44,7 @@ impl EventStoreSQLXPostgres {
         pool: &PgPool,
         events_name: &str,
         streams_name: &str,
-    ) -> Result<PgQueryResult> {
+    ) -> Result<PgDone> {
         // create table if not exists cs_events_person (
         //     id uuid primary key,
         // correlation_id uuid default null,
@@ -77,7 +77,7 @@ impl EventStoreSQLXPostgres {
         Ok(res)
     }
 
-    async fn create_timestamp_trigger(pool: &PgPool, streams_name: &str) -> Result<PgQueryResult> {
+    async fn create_timestamp_trigger(pool: &PgPool, streams_name: &str) -> Result<PgDone> {
         let trigger_function = r#"create or replace function update_modified_column()
             returns trigger as $$
             begin
