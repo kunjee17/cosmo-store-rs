@@ -1,8 +1,8 @@
 [package]
 name = "cosmo_store_util"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Kunjan Dalal <kunjee17@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,7 +19,7 @@ cosmo_store = { path = "../cosmo_store" }
 [dev-dependencies]
 actix-rt = "*"
 claim = "0.5.0"
-sqlx = { version = "0.4", features = [ "runtime-actix-rustls", "postgres", "uuid", "chrono", "json" ] }
+sqlx = { version = "0.5", features = [ "runtime-actix-rustls", "postgres", "uuid", "chrono", "json" ] }
 cosmo_store_sqlx_postgres = { path = "../cosmo_store_sqlx_postgres" }
 cosmo_store_tests = {path = "../cosmo_store_tests"}
 
