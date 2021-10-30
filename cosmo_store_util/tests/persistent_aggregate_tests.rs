@@ -14,6 +14,7 @@ use sqlx::postgres::PgPoolOptions;
 use uuid::Uuid;
 use anyhow::Result;
 use futures;
+use sqlx::PgPool;
 use cosmo_store::types::event_write::EventWrite;
 
 const CONN_BASE: &str = "postgresql://localhost:5432/";
