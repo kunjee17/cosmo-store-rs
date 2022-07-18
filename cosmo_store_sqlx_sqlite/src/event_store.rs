@@ -59,7 +59,7 @@ impl EventStoreSQLXSqlite {
     ) -> Result<Vec<EventRead<Payload, Meta, EventVersion>>> {
         let pool = self.pool();
         let exist_query = format!(
-            "select * from {0} where id = ?2 limit 1",
+            "select * from {0} where id = ? limit 1",
             self.streams_table_name()
         );
         let exist = sqlx::query_as::<_, DBEventStream>(&exist_query)
