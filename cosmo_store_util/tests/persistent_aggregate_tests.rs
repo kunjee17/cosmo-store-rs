@@ -192,7 +192,7 @@ const TODO_AGGREGATE: TodoAggregate = TodoAggregate {
 };
 
 fn get_name() -> String {
-    Uuid::new_v4().to_simple().to_string()
+    Uuid::new_v4().as_simple().to_string()
 }
 
 #[actix_rt::test]

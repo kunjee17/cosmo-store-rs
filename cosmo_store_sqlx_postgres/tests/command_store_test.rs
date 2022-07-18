@@ -49,7 +49,7 @@ where
 }
 
 fn get_name() -> String {
-    Uuid::new_v4().to_simple().to_string()
+    Uuid::new_v4().as_simple().to_string()
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

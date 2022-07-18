@@ -33,7 +33,7 @@ where
     async fn get_events(
         &self,
         stream_id: &str,
-        version: &EventsReadRange<Version>,
+        range: &EventsReadRange<Version>,
     ) -> Result<Vec<EventRead<Payload, Meta, Version>>>;
     async fn get_events_by_correlation_id(
         &self,
