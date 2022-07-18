@@ -1,0 +1,25 @@
+[package]
+name = "cosmo_store_sqlx_sqlite"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cosmo_store = { path = "../cosmo_store" }
+anyhow = "1"
+futures = "0"
+chrono = "0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+async-trait = "0"
+uuid = "1"
+itertools = "0"
+sqlx = { version = "0", features = [ "runtime-tokio-rustls", "sqlite", "uuid", "chrono", "json" ] }
+
+
+
+[dev-dependencies]
+cosmo_store_tests = {path = "../cosmo_store_tests"}
+actix-rt = "*"
+claim = "0.5"
