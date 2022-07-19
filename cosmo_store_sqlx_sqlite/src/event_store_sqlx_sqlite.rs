@@ -95,7 +95,7 @@ impl EventStoreSQLXSqlite {
 
 
         let create_trigger = format!(
-            "create trigger if not exist update_{0} after update on {0} \
+            "create trigger if not exists update_{0} after update on {0} \
              begin \
                 update {0} set last_updated_utc = datetime('now', 'utc') where id = new.id;
              end;\

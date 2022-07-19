@@ -88,7 +88,7 @@ impl EventStoreSQLXPostgres {
 
 
         let create_trigger = format!(
-            "create trigger if not exist update_{0} before update on {0} \
+            "create trigger if not exists update_{0} before update on {0} \
                     for each row execute procedure update_modified_column()",
             streams_name
         );
