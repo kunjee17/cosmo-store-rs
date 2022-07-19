@@ -86,16 +86,14 @@ impl EventStoreSQLXPostgres {
             end;
             $$ language 'plpgsql';"#;
 
-        let drop_trigger = format!("drop trigger if exists update_{0} on {0}", streams_name);
 
         let create_trigger = format!(
-            "create trigger update_{0} before update on {0} \
+            "create trigger if not exist update_{0} before update on {0} \
                     for each row execute procedure update_modified_column()",
             streams_name
         );
 
         let _ = sqlx::query(&trigger_function).execute(pool).await?;
-        let _ = sqlx::query(&drop_trigger).execute(pool).await?;
         let res = sqlx::query(&create_trigger).execute(pool).await?;
         Ok(res)
     }
