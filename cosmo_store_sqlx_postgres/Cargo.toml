@@ -23,4 +23,4 @@ sqlx = { version = "0", features = [ "runtime-tokio-rustls", "postgres", "uuid",
 [dev-dependencies]
 cosmo_store_tests = {path = "../cosmo_store_tests"}
 actix-rt = "*"
-claim = "0.5"
+claim = "0"

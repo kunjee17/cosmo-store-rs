@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::types::Uuid;
 use sqlx::SqlitePool;
-use std::fmt::format;
 
 impl EventStoreSQLXSqlite {
     fn db_events_to_event_reads<Payload, Meta>(
@@ -88,7 +87,7 @@ impl EventStoreSQLXSqlite {
         let _ = sqlx::query(&insert_or_update_stream)
             .bind(updated_stream.id)
             .bind(updated_stream.last_version.0)
-            .execute(&mut tr)
+            .execute(&mut *tr)
             .await?;
 
         let insert_event = format!("insert into {0} (id, correlation_id, causation_id, stream_id, version, name, data, metadata) values (?, ?, ?, ?, ?, ?, ?, ?)", self.events_table_name());
@@ -111,7 +110,7 @@ impl EventStoreSQLXSqlite {
                 .bind(op.name.clone())
                 .bind(data)
                 .bind(metadata)
-                .execute(&mut tr)
+                .execute(&mut *tr)
                 .await?;
         }
 

@@ -86,7 +86,7 @@ impl EventStoreSQLXPostgres {
         let _ = sqlx::query(&insert_or_update_stream)
             .bind(updated_stream.id)
             .bind(updated_stream.last_version.0)
-            .execute(&mut tr)
+            .execute(&mut *tr)
             .await?;
 
         let insert_event = format!("insert into {0} (id, correlation_id, causation_id, stream_id, version, name, data, metadata) values ($1, $2, $3, $4, $5, $6, $7, $8)", self.events_table_name());
@@ -109,7 +109,7 @@ impl EventStoreSQLXPostgres {
                 .bind(op.name.clone())
                 .bind(data)
                 .bind(metadata)
-                .execute(&mut tr)
+                .execute(&mut *tr)
                 .await?;
         }
 

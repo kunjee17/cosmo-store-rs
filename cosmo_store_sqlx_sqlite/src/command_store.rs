@@ -29,7 +29,7 @@ where
             .bind(payload.causation_id)
             .bind(data)
             .bind(payload.name.clone())
-            .execute(&mut tr)
+            .execute(&mut *tr)
             .await?;
 
         tr.commit().await?;

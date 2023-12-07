@@ -19,7 +19,7 @@ cosmo_store = { path = "../cosmo_store" }
 [dev-dependencies]
 actix-rt = "*"
 claim = "0"
-sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "uuid", "chrono", "json" ] }
+sqlx = { version = "0", features = [ "runtime-tokio-rustls", "postgres", "uuid", "chrono", "json" ] }
 cosmo_store_sqlx_postgres = { path = "../cosmo_store_sqlx_postgres" }
 cosmo_store_tests = {path = "../cosmo_store_tests"}
 
