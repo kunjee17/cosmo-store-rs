@@ -14,8 +14,8 @@ pub trait Aggregate<State, Command, Event> {
 
 // Creates a persistent, async command handler for an aggregate given event store.
 pub async fn make_handler<State, Command, Event, Meta, Version>(
-    aggregate: &dyn Aggregate<State, Command, Event>,
-    store: &dyn EventStore<Event, Meta, Version>,
+    aggregate: &impl Aggregate<State, Command, Event>,
+    store: &impl EventStore<Event, Meta, Version>,
     command: &Command,
     stream_id: &str,
     range: &EventsReadRange<Version>,
